@@ -133,11 +133,6 @@ QString AppSettings::getDictionaryPath() const
     return dictionaryPath;
 }
 
-QString AppSettings::getTranslationsPath() const
-{
-    return translationsPath;
-}
-
 bool AppSettings::getAutoSaveEnabled() const
 {
     return autoSaveEnabled;
@@ -565,36 +560,13 @@ AppSettings::AppSettings()
             QSettings::UserScope,
             userDir + "/settings"
         );
-
-        translationsPath = appDir + "/translations";
     }
     else
     {
-#ifdef Q_OS_WIN32
-        // On Windows, don't ever use the registry to store settings, for the
-        // sake of cleanness, ability to load configuration files on other
-        // machines, and also for the user's privacy.
-        //
+        // Use Ini format across OSes.
         QSettings::setDefaultFormat(QSettings::IniFormat);
-#endif
         QSettings settings;
         userDir = QFileInfo(settings.fileName()).dir().absolutePath();
-
-        QStringList translationPaths;
-        translationPaths.append(appDir + "/translations");
-        translationPaths.append(appDir + "/../share/" +
-            QCoreApplication::applicationName().toLower() +
-            "/translations");
-        translationPaths.append(appDir + "/../Resources/translations");
-
-        foreach (const QString& path, translationPaths)
-        {
-            if (QFile::exists(path))
-            {
-                translationsPath = path;
-                break;
-            }
-        }
     }
 
     QDir themeDir(userDir + "/themes");

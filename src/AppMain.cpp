@@ -21,6 +21,7 @@
 #include <QCoreApplication>
 #include <QTranslator>
 #include <QLocale>
+#include <QDebug>
 
 #include "MainWindow.h"
 #include "AppSettings.h"
@@ -34,53 +35,38 @@ int main(int argc, char* argv[])
 
     QApplication app(argc, argv);
 
-    // Call this to force settings initialization before the application
-    // fully launches.
-    //
+    // Load settings.
     AppSettings* appSettings = AppSettings::getInstance();
-    QLocale::setDefault(appSettings->getLocale());
 
-    QTranslator qtTranslator;
-    bool ok = qtTranslator.load("qt_" + appSettings->getLocale(),
-        QLibraryInfo::location(QLibraryInfo::TranslationsPath));
+    // Set locale from settings
+    QString savedLang = appSettings->getLocale();
+    QLocale::setDefault(savedLang);
 
-    if (!ok)
-    {
-        qtTranslator.load("qt_" + appSettings->getLocale(),
-            appSettings->getTranslationsPath());
+    // load translations from a resource file.
+    QString resource = ":/translations";
+
+    QStringList translationsList;
+    translationsList << "qtbase" << "ghostwriter";
+
+    // array of QTranslators for our list.
+    QTranslator translator[translationsList.count()];
+
+    for (int i = 0; i < translationsList.count(); i++) {
+        QString name = translationsList.at(i) + "_" + savedLang;
+        bool ok = translator[i].load(name, resource);
+
+        if (ok) {
+            qDebug().noquote() << "[" + name + "]" <<
+                "using translation for language" << savedLang <<
+                "from" << resource + "/" + name;
+
+            app.installTranslator(&translator[i]);
+
+        } else
+            qWarning().noquote() << "[" + name + "]" <<
+                "can't load translation for language" << savedLang <<
+                "from" << resource + "/" + name;
     }
-
-    app.installTranslator(&qtTranslator);
-
-    QTranslator qtBaseTranslator;
-    ok = qtBaseTranslator.load("qtbase_" + appSettings->getLocale(),
-        QLibraryInfo::location(QLibraryInfo::TranslationsPath));
-
-    if (!ok)
-    {
-        qtBaseTranslator.load("qtbase_" + appSettings->getLocale(),
-            appSettings->getTranslationsPath());
-    }
-
-    app.installTranslator(&qtBaseTranslator);
-
-    QTranslator appTranslator;
-    ok = appTranslator.load
-    (
-        QString("ghostwriter_") + appSettings->getLocale(),
-        appSettings->getTranslationsPath()
-    );
-
-    if (!ok)
-    {
-        appTranslator.load
-        (
-            "ghostwriter_en",
-            appSettings->getTranslationsPath()
-        );
-    }
-
-    app.installTranslator(&appTranslator);
 
     QString filePath = QString();
 

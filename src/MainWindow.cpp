@@ -1372,7 +1372,7 @@ void MainWindow::onSetLocale()
         (
             &ok,
             appSettings->getLocale(),
-            appSettings->getTranslationsPath()
+            ":/translations"
         );
 
     if (ok && (locale != appSettings->getLocale()))

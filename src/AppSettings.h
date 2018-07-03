@@ -52,7 +52,6 @@ class AppSettings : public QObject
 
         QString getThemeDirectoryPath() const;
         QString getDictionaryPath() const;
-        QString getTranslationsPath() const;
 
         bool getAutoSaveEnabled() const;
         Q_SLOT void setAutoSaveEnabled(bool enabled);
@@ -184,7 +183,6 @@ class AppSettings : public QObject
         static AppSettings* instance;
         QString themeDirectoryPath;
         QString dictionaryPath;
-        QString translationsPath;
 
         QFont defaultFont;
         bool autoSaveEnabled;

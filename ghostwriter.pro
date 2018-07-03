@@ -212,8 +212,9 @@ SOURCES += src/AppMain.cpp \
     src/sundown/markdown.c \
     src/sundown/stack.c
 
-# Allow for updating translations
-TRANSLATIONS = $$files(translations/ghostwriter_*.ts)
+# bundle translations as Qt resource.
+include (translations.pri)
+
 
 RESOURCES += resources.qrc
 
