@@ -1,0 +1,6 @@
+[submodule "external/hoedown"]
+	path = external/hoedown
+	url = https://github.com/pazos/hoedown
+[submodule "external/qttranslations"]
+	path = external/qttranslations
+	url = https://github.com/qt/qttranslations
