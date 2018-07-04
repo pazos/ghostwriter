@@ -28,10 +28,11 @@ isEqual(QT_MAJOR_VERSION, 5) : lessThan(QT_MINOR_VERSION, 2) {
 
 TEMPLATE = app
 
-QT += printsupport webkitwidgets widgets concurrent
+QT += printsupport webkitwidgets widgets concurrent svg
 
 CONFIG -= debug
 CONFIG += warn_on
+CONFIG += c++11
 
 # Set program version
 isEmpty(VERSION) {
@@ -53,53 +54,16 @@ MOC_DIR = $${DESTDIR}
 RCC_DIR = $${DESTDIR}
 UI_DIR = $${DESTDIR}
 
+# app bundle (binary + resources embedded)
 TARGET = ghostwriter
+RESOURCES += resources.qrc
+include (translations.pri)
 
-# Input
+# ghostwriter sources
+INCLUDEPATH += src
 
-macx {
-    QMAKE_INFO_PLIST = resources/Info.plist
-
-	LIBS += -lz -framework AppKit
-
-	HEADERS += src/spelling/dictionary_provider_nsspellchecker.h
-
-	OBJECTIVE_SOURCES += src/spelling/dictionary_provider_nsspellchecker.mm
-} else:win32 {
-	LIBS += -lz
-
-	INCLUDEPATH += src/spelling/hunspell
-
-	HEADERS += src/spelling/dictionary_provider_hunspell.h \
-		src/spelling/dictionary_provider_voikko.h
-
-	SOURCES += src/spelling/dictionary_provider_hunspell.cpp \
-		src/spelling/dictionary_provider_voikko.cpp \
-		src/spelling/hunspell/affentry.cxx \
-		src/spelling/hunspell/affixmgr.cxx \
-		src/spelling/hunspell/csutil.cxx \
-		src/spelling/hunspell/filemgr.cxx \
-		src/spelling/hunspell/hashmgr.cxx \
-		src/spelling/hunspell/hunspell.cxx \
-		src/spelling/hunspell/hunzip.cxx \
-		src/spelling/hunspell/phonet.cxx \
-		src/spelling/hunspell/replist.cxx \
-        src/spelling/hunspell/suggestmgr.cxx
-
-} else:unix {
-	CONFIG += link_pkgconfig
-	PKGCONFIG += hunspell
-
-	HEADERS += src/spelling/dictionary_provider_hunspell.h \
-		src/spelling/dictionary_provider_voikko.h
-
-	SOURCES += src/spelling/dictionary_provider_hunspell.cpp \
-		src/spelling/dictionary_provider_voikko.cpp
-}
-
-INCLUDEPATH += src src/spelling
-
-HEADERS += src/MainWindow.h \
+HEADERS += \
+    src/MainWindow.h \
     src/MarkdownEditor.h \
     src/Token.h \
     src/HtmlPreview.h \
@@ -128,7 +92,7 @@ HEADERS += src/MainWindow.h \
     src/MarkdownStyles.h \
     src/MessageBoxHelper.h \
     src/GraphicsFadeEffect.h \
-    src/SundownExporter.h \
+    src/HoedownExporter.h \
     src/StyleSheetManagerDialog.h \
     src/SimpleFontDialog.h \
     src/HighlighterLineStates.h \
@@ -150,16 +114,10 @@ HEADERS += src/MainWindow.h \
     src/spelling/abstract_dictionary_provider.h \
     src/spelling/dictionary_manager.h \
     src/spelling/dictionary_ref.h \
-    src/spelling/spell_checker.h \
-    src/sundown/autolink.h \
-    src/sundown/buffer.h \
-    src/sundown/houdini.h \
-    src/sundown/html_blocks.h \
-    src/sundown/html.h \
-    src/sundown/markdown.h \
-    src/sundown/stack.h
+    src/spelling/spell_checker.h
 
-SOURCES += src/AppMain.cpp \
+SOURCES += \
+    src/AppMain.cpp \
     src/MainWindow.cpp \
     src/MarkdownEditor.cpp \
     src/Token.cpp \
@@ -186,7 +144,7 @@ SOURCES += src/AppMain.cpp \
     src/GraphicsFadeEffect.cpp \
     src/StyleSheetManagerDialog.cpp \
     src/SimpleFontDialog.cpp \
-    src/SundownExporter.cpp \
+    src/HoedownExporter.cpp \
     src/HighlightTokenizer.cpp \
     src/MarkdownTokenizer.cpp \
     src/TimeLabel.cpp \
@@ -202,27 +160,86 @@ SOURCES += src/AppMain.cpp \
     src/image_button.cpp \
     src/color_button.cpp \
     src/spelling/dictionary_manager.cpp \
-    src/spelling/spell_checker.cpp \
-    src/sundown/autolink.c \
-    src/sundown/buffer.c \
-    src/sundown/houdini_href_e.c \
-    src/sundown/houdini_html_e.c \
-    src/sundown/html_smartypants.c \
-    src/sundown/html.c \
-    src/sundown/markdown.c \
-    src/sundown/stack.c
+    src/spelling/spell_checker.cpp
 
-# bundle translations as Qt resource.
-include (translations.pri)
+# platform dependant dictionary providers
+INCLUDEPATH += src/spelling
 
+win32 {
+    INCLUDEPATH += src/spelling/hunspell
+    HEADERS += \
+        src/spelling/dictionary_provider_hunspell.h \
+        src/spelling/dictionary_provider_voikko.h
 
-RESOURCES += resources.qrc
+    SOURCES += \
+        src/spelling/dictionary_provider_hunspell.cpp \
+        src/spelling/dictionary_provider_voikko.cpp \
+        src/spelling/hunspell/affentry.cxx \
+        src/spelling/hunspell/affixmgr.cxx \
+        src/spelling/hunspell/csutil.cxx \
+        src/spelling/hunspell/filemgr.cxx \
+        src/spelling/hunspell/hashmgr.cxx \
+        src/spelling/hunspell/hunspell.cxx \
+        src/spelling/hunspell/hunzip.cxx \
+        src/spelling/hunspell/phonet.cxx \
+        src/spelling/hunspell/replist.cxx \
+        src/spelling/hunspell/suggestmgr.cxx
+
+} else:mac {
+
+    HEADERS += src/spelling/dictionary_provider_nsspellchecker.h
+    OBJECTIVE_SOURCES += src/spelling/dictionary_provider_nsspellchecker.mm
+
+} else:unix {
+
+    CONFIG += link_pkgconfig
+    PKGCONFIG += hunspell
+
+    HEADERS += \
+        src/spelling/dictionary_provider_hunspell.h \
+        src/spelling/dictionary_provider_voikko.h
+
+    SOURCES += \
+        src/spelling/dictionary_provider_hunspell.cpp \
+        src/spelling/dictionary_provider_voikko.cpp
+}
+
+# third-party software
+INCLUDEPATH += \
+    external/hoedown/src
+
+HEADERS += \
+    external/hoedown/src/autolink.h \
+    external/hoedown/src/buffer.h \
+    external/hoedown/src/document.h \
+    external/hoedown/src/escape.h \
+    external/hoedown/src/html.h \
+    external/hoedown/src/stack.h \
+    external/hoedown/src/version.h
+
+SOURCES += \
+    external/hoedown/src/autolink.c \
+    external/hoedown/src/buffer.c \
+    external/hoedown/src/document.c \
+    external/hoedown/src/escape.c \
+    external/hoedown/src/html.c \
+    external/hoedown/src/html_blocks.c \
+    external/hoedown/src/html_smartypants.c \
+    external/hoedown/src/stack.c \
+    external/hoedown/src/version.c
+
+# platform dependant deployment.
 
 macx {
-    ICON = resources/mac/ghostwriter.icns
-} else:win32 {
-    RC_FILE = resources/windows/ghostwriter.rc
-} else:unix {
+    LIBS += -lz -framework AppKit
+    ICON = platform/mac/ghostwriter.icns
+    QMAKE_INFO_PLIST = platform/mac/Info.plist
+
+}else:win32 {
+    LIBS += -lz
+    RC_ICONS = platform/windows/ghostwriter.ico
+
+}else:unix {
     isEmpty(PREFIX) {
         PREFIX = /usr/local
     }
@@ -232,27 +249,25 @@ macx {
     isEmpty(DATADIR) {
         DATADIR = $$PREFIX/share
     }
+
     DEFINES += DATADIR=\\\"$${DATADIR}/ghostwriter\\\"
 
     target.path = $$BINDIR
 
-    pixmap.files = resources/linux/icons/ghostwriter.xpm
+    pixmap.files = platform/linux/icons/ghostwriter.xpm
     pixmap.path = $$DATADIR/pixmaps
 
-    icon.files = resources/linux/icons/hicolor/*
+    icon.files = platform/linux/icons/hicolor/*
     icon.path = $$DATADIR/icons/hicolor
 
-    desktop.files = resources/linux/ghostwriter.desktop
+    desktop.files = platform/linux/ghostwriter.desktop
     desktop.path = $$DATADIR/applications/
 
-    appdata.files = resources/linux/ghostwriter.appdata.xml
+    appdata.files = platform/linux/ghostwriter.appdata.xml
     appdata.path = $$DATADIR/appdata/
 
-    man.files = resources/linux/ghostwriter.1
+    man.files = platform/linux/ghostwriter.1
     man.path = $$PREFIX/share/man/man1
 
-    qm.files = translations/*.qm
-    qm.path = $$DATADIR/ghostwriter/translations
-
-    INSTALLS += target icon pixmap desktop appdata man qm
+    INSTALLS += target icon pixmap desktop appdata man
 }
