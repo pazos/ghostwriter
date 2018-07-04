@@ -234,6 +234,12 @@ macx {
     ICON = platform/mac/ghostwriter.icns
     QMAKE_INFO_PLIST = platform/mac/Info.plist
 
+    # support macOS 10.10+
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.10
+
+    # copy Qt frameworks & libraries inside the application bundle (this doesn't copy translations)
+    QMAKE_POST_LINK = macdeployqt $$sprintf("%1/%2/%3.app", $$OUT_PWD, $$DESTDIR, $$TARGET)
+
 }else:win32 {
 
     LIBS += -lz
