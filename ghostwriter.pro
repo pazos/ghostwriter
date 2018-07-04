@@ -1,7 +1,7 @@
 ################################################################################
 #
 # Copyright (C) 2014-2018 wereturtle
-# Copyright (C) 2009, 2010, 2011, 2012, 2013, 2014 Graeme Gott <graeme@gottcode.org>
+# Copyright (C) 2009-2014 Graeme Gott <graeme@gottcode.org>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -60,7 +60,7 @@ RESOURCES += resources.qrc
 include (translations.pri)
 
 # ghostwriter sources
-INCLUDEPATH += src
+INCLUDEPATH += src src/spelling
 
 HEADERS += \
     src/MainWindow.h \
@@ -162,9 +162,13 @@ SOURCES += \
     src/spelling/dictionary_manager.cpp \
     src/spelling/spell_checker.cpp
 
-# platform dependant dictionary providers
-INCLUDEPATH += src/spelling
+OTHER_FILES += \
+    CONTRIBUTING.md \
+    CREDITS.md \
+    README.md \
+    LICENSE
 
+# dictionary providers
 mac {
 
     HEADERS += src/spelling/dictionary_provider_nsspellchecker.h
@@ -222,7 +226,7 @@ win32 {
 }
 
 
-# platform dependant deployment.
+# platform deployment.
 
 macx {
 
