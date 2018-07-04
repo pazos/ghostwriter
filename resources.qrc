@@ -1,5 +1,9 @@
 <RCC>
     <qresource prefix="/">
+        <file>resources/github.css</file>
+        <file>resources/quickreferenceguide_en.html</file>
+        <file>resources/quickreferenceguide_ja.html</file>
+        <file>resources/quickreferenceguide_ru.html</file>
         <file>resources/images/close.svg</file>
         <file>resources/images/close-hover.svg</file>
         <file>resources/images/close-pressed.svg</file>
@@ -22,9 +26,5 @@
         <file>resources/images/configure-dark.svg</file>
         <file>resources/images/configure-light.svg</file>
         <file>resources/images/ghostwriter.svg</file>
-        <file>resources/github.css</file>
-        <file>resources/quickreferenceguide_en.html</file>
-        <file>resources/quickreferenceguide_ja.html</file>
-        <file>resources/quickreferenceguide_ru.html</file>
     </qresource>
 </RCC>

@@ -4,3 +4,6 @@
 [submodule "external/qttranslations"]
 	path = external/qttranslations
 	url = https://github.com/qt/qttranslations
+[submodule "external/hunspell"]
+	path = external/hunspell
+	url = https://github.com/hunspell/hunspell

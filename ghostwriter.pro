@@ -165,36 +165,12 @@ SOURCES += \
 # platform dependant dictionary providers
 INCLUDEPATH += src/spelling
 
-win32 {
-    INCLUDEPATH += src/spelling/hunspell
-    HEADERS += \
-        src/spelling/dictionary_provider_hunspell.h \
-        src/spelling/dictionary_provider_voikko.h
-
-    SOURCES += \
-        src/spelling/dictionary_provider_hunspell.cpp \
-        src/spelling/dictionary_provider_voikko.cpp \
-        src/spelling/hunspell/affentry.cxx \
-        src/spelling/hunspell/affixmgr.cxx \
-        src/spelling/hunspell/csutil.cxx \
-        src/spelling/hunspell/filemgr.cxx \
-        src/spelling/hunspell/hashmgr.cxx \
-        src/spelling/hunspell/hunspell.cxx \
-        src/spelling/hunspell/hunzip.cxx \
-        src/spelling/hunspell/phonet.cxx \
-        src/spelling/hunspell/replist.cxx \
-        src/spelling/hunspell/suggestmgr.cxx
-
-} else:mac {
+mac {
 
     HEADERS += src/spelling/dictionary_provider_nsspellchecker.h
     OBJECTIVE_SOURCES += src/spelling/dictionary_provider_nsspellchecker.mm
 
-} else:unix {
-
-    CONFIG += link_pkgconfig
-    PKGCONFIG += hunspell
-
+} else {
     HEADERS += \
         src/spelling/dictionary_provider_hunspell.h \
         src/spelling/dictionary_provider_voikko.h
@@ -202,6 +178,7 @@ win32 {
     SOURCES += \
         src/spelling/dictionary_provider_hunspell.cpp \
         src/spelling/dictionary_provider_voikko.cpp
+
 }
 
 # third-party software
@@ -228,18 +205,41 @@ SOURCES += \
     external/hoedown/src/stack.c \
     external/hoedown/src/version.c
 
+win32 {
+    INCLUDEPATH += external/hunspell/src/hunspell
+
+    SOURCES += \
+        external/hunspell/src/hunspell/affentry.cxx \
+        external/hunspell/src/hunspell/affixmgr.cxx \
+        external/hunspell/src/hunspell/csutil.cxx \
+        external/hunspell/src/hunspell/filemgr.cxx \
+        external/hunspell/src/hunspell/hashmgr.cxx \
+        external/hunspell/src/hunspell/hunspell.cxx \
+        external/hunspell/src/hunspell/hunzip.cxx \
+        external/hunspell/src/hunspell/phonet.cxx \
+        external/hunspell/src/hunspell/replist.cxx \
+        external/hunspell/src/hunspell/suggestmgr.cxx
+}
+
+
 # platform dependant deployment.
 
 macx {
+
     LIBS += -lz -framework AppKit
     ICON = platform/mac/ghostwriter.icns
     QMAKE_INFO_PLIST = platform/mac/Info.plist
 
 }else:win32 {
+
     LIBS += -lz
     RC_ICONS = platform/windows/ghostwriter.ico
 
 }else:unix {
+
+    CONFIG += link_pkgconfig
+    PKGCONFIG += hunspell
+
     isEmpty(PREFIX) {
         PREFIX = /usr/local
     }
