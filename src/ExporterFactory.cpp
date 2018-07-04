@@ -22,7 +22,7 @@
 #include <QSettings>
 
 #include "ExporterFactory.h"
-#include "SundownExporter.h"
+#include "HoedownExporter.h"
 #include "CommandLineExporter.h"
 
 ExporterFactory* ExporterFactory::instance = NULL;
@@ -92,9 +92,9 @@ ExporterFactory::ExporterFactory()
     bool cmarkIsAvailable = isCommandAvailable("cmark --version");
     bool cmarkGfmIsAvailable = isCommandAvailable("cmark-gfm --version");
 
-    SundownExporter* sundownExporter = new SundownExporter();
-    fileExporters.append(sundownExporter);
-    htmlExporters.append(sundownExporter);
+    HoedownExporter* hoedownExporter = new HoedownExporter();
+    fileExporters.append(hoedownExporter);
+    htmlExporters.append(hoedownExporter);
 
     if (pandocIsAvailable)
     {
