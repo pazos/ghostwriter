@@ -30,6 +30,7 @@
 #include <QRegExp>
 #include <QStringList>
 #include <QTextCodec>
+#include <QStandardPaths>
 
 #include <hunspell.hxx>
 
@@ -295,23 +296,13 @@ void DictionaryHunspell::removeFromSession(const QStringList& words)
 DictionaryProviderHunspell::DictionaryProviderHunspell()
 {
 	QStringList dictdirs = QDir::searchPaths("dict");
-#if !defined(Q_OS_MAC) && defined(Q_OS_UNIX)
-	QStringList xdg = QString(qgetenv("XDG_DATA_DIRS")).split(QChar(':'), QString::SkipEmptyParts);
-	if (xdg.isEmpty()) {
-		xdg.append("/usr/local/share");
-		xdg.append("/usr/share");
-	}
-	QStringList subdirs = QStringList() << "/hunspell" << "/myspell/dicts" << "/myspell" << "/mozilla-dicts";
-	foreach (const QString& subdir, subdirs) {
-		foreach (const QString& dir, xdg) {
-			QString path = dir + subdir;
-			if (!dictdirs.contains(path)) {
-				dictdirs.append(path);
-			}
-		}
-	}
-#endif
-	QDir::setSearchPaths("dict", dictdirs);
+
+        dictdirs += QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, "hunspell", QStandardPaths::LocateDirectory);
+        dictdirs += QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, "myspell", QStandardPaths::LocateDirectory);
+        dictdirs += QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, "myspell/dicts", QStandardPaths::LocateDirectory);
+        dictdirs += QStandardPaths::locateAll(QStandardPaths::GenericDataLocation, "mozilla/dicts", QStandardPaths::LocateDirectory);
+
+        QDir::setSearchPaths("dict", dictdirs);
 }
 
 //-----------------------------------------------------------------------------
