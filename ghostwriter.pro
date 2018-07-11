@@ -22,12 +22,15 @@ TEMPLATE = app
 
 QT += printsupport webkitwidgets widgets concurrent svg
 
-CONFIG -= debug
-CONFIG += warn_on
-
+# include common static libraries
 include(../libraries/sundown/sundown.pri)
 include(../libraries/hoedown/hoedown.pri)
-include(../libraries/hunspell/hunspell.pri)
+
+# include translations
+TRANSLATIONS = $$files(translations/ghostwriter_*.ts)
+
+# resource files
+RESOURCES += resources.qrc
 
 # Set program version
 isEmpty(VERSION) {
@@ -35,40 +38,19 @@ isEmpty(VERSION) {
 }
 DEFINES += APPVERSION='\\"$${VERSION}\\"'
 
-
-CONFIG(debug, debug|release) {
-    DESTDIR = build/debug
-}
-else {
-    DESTDIR = build/release
-}
-
-#DEFINES += QT_NO_DEBUG_OUTPUT=1
 OBJECTS_DIR = $${DESTDIR}
 MOC_DIR = $${DESTDIR}
 RCC_DIR = $${DESTDIR}
 UI_DIR = $${DESTDIR}
 
-TARGET = ghostwriter
+# move target outside subdir
+TARGET = $$OUT_PWD/../target/ghostwriter
 
-macx {
-    LIBS += -framework AppKit
-    HEADERS += src/spelling/dictionary_provider_nsspellchecker.h
-    OBJECTIVE_SOURCES += src/spelling/dictionary_provider_nsspellchecker.mm
-} else {
-    CONFIG += link_pkgconfig
-    PKGCONFIG += hunspell
+# ghostwriter sources
+INCLUDEPATH += src
 
-    HEADERS += src/spelling/dictionary_provider_hunspell.h \
-        src/spelling/dictionary_provider_voikko.h
-
-    SOURCES += src/spelling/dictionary_provider_hunspell.cpp \
-        src/spelling/dictionary_provider_voikko.cpp
-}
-
-INCLUDEPATH += src src/spelling
-
-HEADERS += src/MainWindow.h \
+HEADERS += \
+    src/MainWindow.h \
     src/MarkdownEditor.h \
     src/Token.h \
     src/HtmlPreview.h \
@@ -122,7 +104,8 @@ HEADERS += src/MainWindow.h \
     src/spelling/spell_checker.h \
     src/HoedownExporter.h
 
-SOURCES += src/AppMain.cpp \
+SOURCES += \
+    src/AppMain.cpp \
     src/MainWindow.cpp \
     src/MarkdownEditor.cpp \
     src/Token.cpp \
@@ -168,12 +151,33 @@ SOURCES += src/AppMain.cpp \
     src/spelling/spell_checker.cpp \
     src/HoedownExporter.cpp
 
-# Allow for updating translations
-TRANSLATIONS = $$files(translations/ghostwriter_*.ts)
 
-RESOURCES += resources.qrc
+# dictionary providers
+INCLUDEPATH += src/spelling
 
 macx {
+    HEADERS +=\
+	src/spelling/dictionary_provider_nsspellchecker.h
+    
+    OBJECTIVE_SOURCES += \
+	src/spelling/dictionary_provider_nsspellchecker.mm
+
+} else {
+    HEADERS += \
+	src/spelling/dictionary_provider_hunspell.h \
+        src/spelling/dictionary_provider_voikko.h
+
+    SOURCES += \
+	src/spelling/dictionary_provider_hunspell.cpp \
+        src/spelling/dictionary_provider_voikko.cpp
+}
+
+# deployment
+QMAKE_EXTRA_TARGETS += deploy
+
+macx {
+    LIBS += -framework AppKit
+
     # macOS minimum target:
     QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.10
 
@@ -181,17 +185,28 @@ macx {
     ICON = resources/mac/ghostwriter.icns
     QMAKE_INFO_PLIST = resources/mac/Info.plist
 
-    # run macdeployqt after building ghostwriter - copies frameworks & libraries.
-    QMAKE_POST_LINK =  macdeployqt $$sprintf("%1/%2/%3.app", $$OUT_PWD, $$DESTDIR, $$TARGET)
-
-    # copy translations using a helper script.
-    QMAKE_POST_LINK += $$escape_expand(\n\t) $$PWD/resources/mac/macdeploy_helper.sh \
+    # Rules for deploy distributable app bundle for macOS
+    deploy.commands +=  macdeployqt $$sprintf("%1/%2/%3.app", $$OUT_PWD, $$DESTDIR, $$TARGET)
+    deploy.commands += $$escape_expand(\n\t) $$PWD/resources/mac/macdeploy_helper.sh \
         $${OUT_PWD}/$${DESTDIR}/$${TARGET}.app/Contents/Resources/translations \
         $${OUT_PWD}/$${DESTDIR}/translations
 
 } else:win32 {
+    # include hunspell static library
+    include(../libraries/hunspell/hunspell.pri)
+    
+    # windows icon
     RC_FILE = resources/windows/ghostwriter.rc
+
+    # Rules for deploy distributable app for Windows
+
+    ### TODO: test windeployqt on windows (minGW)
+
 } else:unix {
+    CONFIG += link_pkgconfig
+    PKGCONFIG += hunspell
+
+    # Rules for install app for linux/bsd (dynamic linked against system Qt)
     isEmpty(PREFIX) {
         PREFIX = /usr/local
     }
@@ -224,4 +239,10 @@ macx {
     qm.path = $$DATADIR/ghostwriter/translations
 
     INSTALLS += target icon pixmap desktop appdata man qm
+
+    # Rules for deploy distributable app for linux x64, using linuxdeployqt
+    contains(QMAKE_HOST.arch, x86_64) {
+        deploy.commands += $$escape_expand(\n\t) $$PWD/resources/linux/linuxdeploy_helper.sh \
+            $$PWD $$OUT_PWD/$$DESTDIR/AppImage
+    }
 }
