@@ -18,20 +18,16 @@
 #
 ################################################################################
 
-lessThan(QT_MAJOR_VERSION, 5) {
-    error("ghostwriter requires Qt 5.2 or greater")
-}
-
-isEqual(QT_MAJOR_VERSION, 5) : lessThan(QT_MINOR_VERSION, 2) {
-    error("ghostwriter requires Qt 5.2 or greater")
-}
-
 TEMPLATE = app
 
 QT += printsupport webkitwidgets widgets concurrent svg
 
 CONFIG -= debug
 CONFIG += warn_on
+
+include(../libraries/sundown/sundown.pri)
+include(../libraries/hoedown/hoedown.pri)
+include(../libraries/hunspell/hunspell.pri)
 
 # Set program version
 isEmpty(VERSION) {
@@ -55,37 +51,11 @@ UI_DIR = $${DESTDIR}
 
 TARGET = ghostwriter
 
-# Input
-
 macx {
-    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.10
-
     LIBS += -framework AppKit
-
     HEADERS += src/spelling/dictionary_provider_nsspellchecker.h
-
     OBJECTIVE_SOURCES += src/spelling/dictionary_provider_nsspellchecker.mm
-} else:win32 {
-
-    INCLUDEPATH += src/spelling/hunspell
-
-    HEADERS += src/spelling/dictionary_provider_hunspell.h \
-        src/spelling/dictionary_provider_voikko.h
-
-    SOURCES += src/spelling/dictionary_provider_hunspell.cpp \
-        src/spelling/dictionary_provider_voikko.cpp \
-        src/spelling/hunspell/affentry.cxx \
-        src/spelling/hunspell/affixmgr.cxx \
-        src/spelling/hunspell/csutil.cxx \
-        src/spelling/hunspell/filemgr.cxx \
-        src/spelling/hunspell/hashmgr.cxx \
-        src/spelling/hunspell/hunspell.cxx \
-        src/spelling/hunspell/hunzip.cxx \
-        src/spelling/hunspell/phonet.cxx \
-        src/spelling/hunspell/replist.cxx \
-        src/spelling/hunspell/suggestmgr.cxx
-
-} else:unix {
+} else {
     CONFIG += link_pkgconfig
     PKGCONFIG += hunspell
 
@@ -150,13 +120,7 @@ HEADERS += src/MainWindow.h \
     src/spelling/dictionary_manager.h \
     src/spelling/dictionary_ref.h \
     src/spelling/spell_checker.h \
-    src/sundown/autolink.h \
-    src/sundown/buffer.h \
-    src/sundown/houdini.h \
-    src/sundown/html_blocks.h \
-    src/sundown/html.h \
-    src/sundown/markdown.h \
-    src/sundown/stack.h
+    src/HoedownExporter.h
 
 SOURCES += src/AppMain.cpp \
     src/MainWindow.cpp \
@@ -202,14 +166,7 @@ SOURCES += src/AppMain.cpp \
     src/color_button.cpp \
     src/spelling/dictionary_manager.cpp \
     src/spelling/spell_checker.cpp \
-    src/sundown/autolink.c \
-    src/sundown/buffer.c \
-    src/sundown/houdini_href_e.c \
-    src/sundown/houdini_html_e.c \
-    src/sundown/html_smartypants.c \
-    src/sundown/html.c \
-    src/sundown/markdown.c \
-    src/sundown/stack.c
+    src/HoedownExporter.cpp
 
 # Allow for updating translations
 TRANSLATIONS = $$files(translations/ghostwriter_*.ts)
@@ -217,6 +174,9 @@ TRANSLATIONS = $$files(translations/ghostwriter_*.ts)
 RESOURCES += resources.qrc
 
 macx {
+    # macOS minimum target:
+    QMAKE_MACOSX_DEPLOYMENT_TARGET = 10.10
+
     # generate property list for macOS
     ICON = resources/mac/ghostwriter.icns
     QMAKE_INFO_PLIST = resources/mac/Info.plist

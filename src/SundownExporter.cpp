@@ -28,10 +28,9 @@
 
 #include "SundownExporter.h"
 
-#include "sundown/markdown.h"
-#include "sundown/html.h"
-#include "sundown/buffer.h"
-
+#include "markdown.h"
+#include "buffer.h"
+#include "html.h"
 
 SundownExporter::SundownExporter() : Exporter("Sundown")
 {
